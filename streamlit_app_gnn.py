@@ -105,9 +105,13 @@ def gcn_propagate(A: np.ndarray, H: np.ndarray, layers: int) -> np.ndarray:
 
 def project_2d(H: np.ndarray, method: str) -> tuple[np.ndarray, str]:
     H_s = StandardScaler().fit_transform(H)
+    n_comp = min(2, H_s.shape[0], H_s.shape[1])
+
     if method == "PCA" or n < 15:
-        pca = PCA(n_components=2)
+        pca = PCA(n_components=n_comp)
         emb = pca.fit_transform(H_s)
+        if emb.shape[1] < 2:
+            emb = np.hstack([emb, np.zeros((emb.shape[0], 2 - emb.shape[1]))])
         label = f"PCA — explained variance {pca.explained_variance_ratio_.sum():.0%}"
     else:
         perp = min(30, max(5, n // 5))
